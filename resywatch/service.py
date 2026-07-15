@@ -100,6 +100,8 @@ async def poll_once(config: Config, client, store, notifier) -> int:
     """Run one full sweep over all watches. Returns number of new matches."""
     new_matches = 0
     for watch in config.watches:
+        if watch.venue_id is None:
+            continue  # placeholder watch — venue_id not filled in yet
         for day in _watch_days(watch, config.poll.lookahead_days):
             try:
                 slots = await client.find_slots(watch.venue_id, day, watch.party_size)

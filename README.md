@@ -38,6 +38,17 @@ Two options (pick one), configured in `config.yaml` / `.env`:
 - **Email + password:** set `RESY_EMAIL` / `RESY_PASSWORD` and leave the token
   blank; resywatch logs in for you.
 
+### Your watchlist
+
+`config.example.yaml` already contains the target list (4 Charles Prime Rib,
+Torrisi, Rezdora, Don Angie, The Corner Store, Crane Club, Monkey Bar, and
+Anjelica's in Sea Bright NJ) with Thu / Fri / Sat windows and
+`party_sizes: [2, 4]`. Each restaurant just needs its `venue_id` filled in.
+
+Use `party_sizes: [2, 4]` to watch several party sizes at once — resywatch
+expands it into one watch per size. Run `python -m resywatch watches` to see
+which entries still say `NEEDS ID`.
+
 ### Finding venue IDs
 
 ```bash

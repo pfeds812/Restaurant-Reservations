@@ -46,11 +46,19 @@ def _list_watches(config) -> None:
     if not config.watches:
         print("No watches configured. Add some under 'watches:' in config.yaml.")
         return
+    missing = 0
     for w in config.watches:
-        print(f"- {w.name}: venue {w.venue_id}, party {w.party_size}, "
-              f"{w.date_from}..{w.date_to}, "
+        venue = w.venue_id if w.venue_id is not None else "NEEDS ID"
+        if w.venue_id is None:
+            missing += 1
+        days = ",".join(w.days_of_week) if w.days_of_week else "any"
+        print(f"- {w.name}: venue {venue}, party {w.party_size}, "
+              f"{w.date_from}..{w.date_to}, {days} "
               f"{w.earliest_time:%H:%M}-{w.latest_time:%H:%M}"
               f"{' [auto]' if w.auto_confirm else ''}")
+    if missing:
+        print(f"\n{missing} watch(es) still NEED a venue_id — look them up with:")
+        print('  python -m resywatch search "Restaurant Name"')
 
 
 def _run(config) -> None:

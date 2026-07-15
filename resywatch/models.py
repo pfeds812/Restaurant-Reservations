@@ -50,7 +50,7 @@ class Watch:
     """A user's standing request to be alerted when a venue has matching slots."""
 
     name: str
-    venue_id: int
+    venue_id: int | None
     party_size: int
     date_from: date
     date_to: date

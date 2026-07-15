@@ -70,11 +70,22 @@ class Config:
     db_path: str = "resywatch.db"
 
 
-def _load_watch(raw: dict) -> Watch:
-    return Watch(
-        name=raw["name"],
-        venue_id=int(raw["venue_id"]),
-        party_size=int(raw["party_size"]),
+def _load_watches(raw: dict) -> list[Watch]:
+    """Load one YAML watch block into one or more Watch objects.
+
+    ``party_sizes: [2, 4]`` expands into one Watch per size (Resy queries
+    availability per party size). ``party_size: 2`` still works for a single.
+    """
+    vid = raw.get("venue_id")
+    venue_id = int(vid) if vid not in (None, "") else None
+
+    sizes = raw.get("party_sizes")
+    if not sizes:
+        sizes = [raw["party_size"]]
+    sizes = [int(s) for s in sizes]
+
+    common = dict(
+        venue_id=venue_id,
         date_from=date.fromisoformat(str(raw["date_from"])),
         date_to=date.fromisoformat(str(raw["date_to"])),
         earliest_time=_parse_time(raw.get("earliest_time"), time(0, 0)),
@@ -86,6 +97,12 @@ def _load_watch(raw: dict) -> Watch:
         days_of_week=list(raw.get("days_of_week") or []),
         auto_confirm=bool(raw.get("auto_confirm", False)),
     )
+
+    watches = []
+    for size in sizes:
+        name = raw["name"] if len(sizes) == 1 else f"{raw['name']} (party {size})"
+        watches.append(Watch(name=name, party_size=size, **common))
+    return watches
 
 
 def load_config(path: str = "config.yaml") -> Config:
@@ -126,7 +143,9 @@ def load_config(path: str = "config.yaml") -> Config:
         per_request_delay=float(poll_raw.get("per_request_delay", 0.5)),
     )
 
-    watches = [_load_watch(w) for w in (raw.get("watches") or [])]
+    watches: list[Watch] = []
+    for w in raw.get("watches") or []:
+        watches.extend(_load_watches(w))
 
     return Config(
         resy=resy,
