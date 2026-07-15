@@ -1,0 +1,73 @@
+# Copy to config.yaml and fill in. Values like ${RESY_AUTH_TOKEN} are read
+# from the environment or a local .env file (see .env.example).
+
+resy:
+  # The public web API key works for most people; override only if needed.
+  api_key: "VbWk7s3L4KiK5fzlO7JD3Q5EYolJI7n5"
+
+  # EITHER paste an auth token grabbed from the Resy website (Network tab ->
+  # any api.resy.com request -> "x-resy-auth-token" header) ...
+  auth_token: "${RESY_AUTH_TOKEN}"
+
+  # ... OR log in with email + password instead (leave auth_token blank).
+  email: "${RESY_EMAIL}"
+  password: "${RESY_PASSWORD}"
+
+  # Optional. Many hard-to-get venues require a card on file (deposit /
+  # cancellation fee). If left blank, resywatch uses your Resy default.
+  payment_method_id: "${RESY_PAYMENT_METHOD_ID}"
+
+server:
+  host: "127.0.0.1"
+  port: 8787
+  # Used to build the "Book it" link inside notifications. If you run this on
+  # a home server / phone, point this at a reachable address.
+  public_url: "http://127.0.0.1:8787"
+
+poll:
+  interval_seconds: 30      # how often to sweep the whole watchlist
+  jitter_seconds: 10        # random extra delay so requests aren't robotic
+  lookahead_days: 30        # never look further out than this
+  per_request_delay: 0.5    # polite pause between individual Resy calls
+
+notifications:
+  console: true
+  # Easiest push option: install the free "ntfy" app, subscribe to a random
+  # topic name, and put that name here. The alert has a "Book it" button.
+  ntfy:
+    enabled: false
+    server: "https://ntfy.sh"
+    topic: "resywatch-CHANGE-ME-to-something-unguessable"
+  email:
+    enabled: false
+    smtp_host: "smtp.gmail.com"
+    smtp_port: 587
+    username: "${SMTP_USER}"
+    password: "${SMTP_PASS}"       # Gmail: use an App Password
+    from_addr: "${SMTP_USER}"
+    to_addr: "peter.federer@gmail.com"
+
+# One entry per restaurant/time you're hunting. Find venue_id with:
+#   python -m resywatch search "Carbone"
+watches:
+  - name: "Carbone — Fri/Sat dinner for 2"
+    venue_id: 6194              # example only — look yours up
+    party_size: 2
+    date_from: "2026-07-20"
+    date_to: "2026-08-20"
+    days_of_week: ["Fri", "Sat"]     # optional; omit for any day
+    earliest_time: "18:00"
+    latest_time: "21:30"
+    preferred_time: "19:30"          # optional; ranks closest slot first
+    table_types: []                  # optional, e.g. ["Dining Room", "Patio"]
+    auto_confirm: false              # true = book instantly, no confirm step
+
+  - name: "Local NJ spot — any weekend evening"
+    venue_id: 12345
+    party_size: 4
+    date_from: "2026-07-15"
+    date_to: "2026-09-01"
+    days_of_week: ["Fri", "Sat", "Sun"]
+    earliest_time: "17:30"
+    latest_time: "20:30"
+    auto_confirm: false
